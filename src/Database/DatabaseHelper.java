@@ -8,6 +8,8 @@ import java.sql.SQLException;
 
 import Exceptions.FailedToRegisterException;
 import Exceptions.InvalidCredentialsException;
+import Exceptions.UserAccountBlockedException;
+import Exceptions.UserNotFoundException;
 import Models.User;
 
 public class DatabaseHelper {
@@ -36,36 +38,66 @@ public class DatabaseHelper {
 		return null;
 	}
 
-	public User login(String username, String password) throws InvalidCredentialsException {
+	public User login(String username, String password) throws InvalidCredentialsException, UserAccountBlockedException {
 		try {
 			PreparedStatement login = connection
 					.prepareStatement("SELECT * FROM users WHERE username = ? AND password = ?");
 			login.setString(1, username);
 			login.setString(2, password);
 			ResultSet result = login.executeQuery();
-			User user = new User();
-			while (result.next()) {
-				user.setUsername(result.getString("username"));
+
+			if (!result.isBeforeFirst()) {
+				throw new InvalidCredentialsException();
+			} else {
+				User user = new User();
+				while (result.next()) {
+					if(result.getInt("isBlocked") == 1) {
+						throw new UserAccountBlockedException();
+					}
+					
+					user.setUsername(result.getString("username"));
+					user.setfName(result.getString("fName"));
+					user.setlName(result.getString("lName"));
+					if(result.getInt("isAdmin") == 1) {
+						user.setIsAdmin(true);
+					}
+				}
+				return user;
 			}
-			return user;
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new InvalidCredentialsException();
-		}
+		} 
 	}
 
-	public User register(String fName, String lName, String username, String password) throws FailedToRegisterException {
+	public User register(String fName, String lName, String username, String password)
+			throws FailedToRegisterException {
 		try {
-			PreparedStatement register = connection.prepareStatement("INSERT INTO users(fName, lName, username, password) VALUES(?, ?, ?, ?)");
+			PreparedStatement register = connection
+					.prepareStatement("INSERT INTO users(fName, lName, username, password) VALUES(?, ?, ?, ?)");
 			register.setString(1, fName);
 			register.setString(2, lName);
 			register.setString(3, username);
 			register.setString(4, password);
 			register.execute();
-			return login(username, password);
-		} catch (SQLException | InvalidCredentialsException e) {
+			return new User(fName, lName, username);
+		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new FailedToRegisterException();
-		}
+		} 
 	}
+	
+	public void blockUser(String username, int status) throws UserNotFoundException {
+		try {
+			PreparedStatement block = connection
+					.prepareStatement("UPDATE users SET isBlocked = ? WHERE username = ?");
+			block.setInt(1, status);
+			block.setString(2, username);
+			block.executeUpdate();
+		} catch(SQLException e) {
+			throw new UserNotFoundException();
+		}
+				
+	}
+	
 }
