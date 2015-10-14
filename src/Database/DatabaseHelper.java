@@ -13,7 +13,6 @@ import Exceptions.UserNotFoundException;
 import Models.User;
 
 public class DatabaseHelper {
-
 	private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
 	private static final String DB_URL = "jdbc:mysql://localhost/wednesdayTaskThing";
 
@@ -27,7 +26,6 @@ public class DatabaseHelper {
 		try {
 			Class.forName(JDBC_DRIVER);
 			Connection conn = DriverManager.getConnection(DB_URL, "root", "");
-			return conn;
 		} catch (ClassNotFoundException e) {
 			System.out.println("Things went wrong");
 			e.printStackTrace();
