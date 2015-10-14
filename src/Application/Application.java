@@ -13,40 +13,40 @@ public class Application {
 	private Scanner sc;
 	private DatabaseHelper dbHelper;
 	private User currentUser;
-	private boolean running = true;
+	private boolean running;
 	
 	public Application() {
 		sc = new Scanner(System.in);
-		dbHelper = new DatabaseHelper();
-		
-		if (hasAccount()) {
-			currentUser = getLoginDetails();
-			System.out.println("Welcome to the Darkside, " + currentUser.getUsername());
-		} else {
-			currentUser = getNewAccountDetails();
-			System.out.println("Welcome to the Darkside, " + currentUser.getUsername());
-		}
-		
+		dbHelper = new DatabaseHelper();		
+		running = true;
 		while (running) {
+			if (currentUser == null) {
+				hasAccount();
+			}
 			System.out.println("What do you want to do?");
 			System.out.println("h for help");
 			getInput();
 		}
 	}
 	
-	public boolean hasAccount() {
+	public void hasAccount() {
 		System.out.println("Do you have an account? Y/N");
 		String line = sc.nextLine();
 		char option = line.toLowerCase().charAt(0);
 
 		switch (option) {
 		case 'y':
-			return true;
+			currentUser = getLoginDetails();
+			break;
 		case 'n':
-			return false;
+			currentUser = getNewAccountDetails(); 
+			break;
+		case 'x': 
+			doExit(); 
+			break;
 		default:
 			System.out.println("Try again");
-			return hasAccount();
+			hasAccount();
 		}
 	}
 
@@ -137,13 +137,12 @@ public class Application {
 		if(currentUser != null) {
 			System.out.println(currentUser.getUsername() + " has been logged out");
 			currentUser = null;
-			getLoginDetails();
 		}
 	}
 	
 	private void doExit() {
 		System.out.println("Goodbye");
-		System.exit(0);
-		running = false; 
+		running = false;
+		System.exit(0); 
 	}
 }

@@ -25,14 +25,14 @@ public class DatabaseHelper {
 	private Connection getDatabaseConnection() {
 		try {
 			Class.forName(JDBC_DRIVER);
-			Connection conn = DriverManager.getConnection(DB_URL, "root", "");
+			return DriverManager.getConnection(DB_URL, "root", "");
 		} catch (ClassNotFoundException e) {
 			System.out.println("Things went wrong");
 			e.printStackTrace();
 		} catch (SQLException e) {
 			System.out.println("Things went wrong");
 			e.printStackTrace();
-		}
+		} 
 		return null;
 	}
 
@@ -71,8 +71,7 @@ public class DatabaseHelper {
 	public User register(String fName, String lName, String username, String password)
 			throws FailedToRegisterException {
 		try {
-			PreparedStatement register = connection
-					.prepareStatement("INSERT INTO users(fName, lName, username, password) VALUES(?, ?, ?, ?)");
+			PreparedStatement register = connection.prepareStatement("INSERT INTO users(fName, lName, username, password) VALUES(?, ?, ?, ?)");
 			register.setString(1, fName);
 			register.setString(2, lName);
 			register.setString(3, username);
